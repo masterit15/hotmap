@@ -1,10 +1,11 @@
 <?
   $result = array('success'=> false);
-  function addObjects($data){
+  function addObjects($coords, $address){
     $file = $_SERVER["DOCUMENT_ROOT"] . "/objects.json";
     $current = json_decode(file_get_contents($file, true));
     $array = array(
-      'coords' => $data,
+      'address' => $address,
+      'coords' => [floatval($coords[0]), floatval($coords[1])],
       'id' => count($current) > 0 ? count($current) + 1 : 1,
     );
     $current[] = $array;
@@ -16,7 +17,8 @@
   }
 
   if($_REQUEST['action'] == 'add'){
-    $result['result'] =  addObjects($_POST['coords']);
+    $coords = explode(',', $_REQUEST['coords']);
+    $result['result'] =  addObjects($coords, $_REQUEST['address']);
     $result['success'] = true;
   }else{
     $result['success'] = false;
