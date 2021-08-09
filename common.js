@@ -12,19 +12,20 @@ function addObject(coords){
   })
 }
 function getObject(){
-  $.ajax({
-    method: 'POST',
-    url: '/add_object.php',
-    data: {action: 'get'},
-    success:function(res){
-      console.log(res);
-    },
-    error:function(err){
-      console.error(err)
-    }
+  return new Promise((resolve, reject)=>{
+    fetch('/add_object.php')
+    .then(response=>response.json())
+    .then(result=>{
+      if(result.success){
+        resolve(result)
+      }
+    })
   })
 }
-getObject()
+getObject().then(res=>{
+  initMap(res)
+})
+function initMap(coords){
 ymaps.ready(['Heatmap']).then(function init() {
     var obj = json;
     var myMap = new ymaps.Map('map', {
@@ -55,8 +56,6 @@ ymaps.ready(['Heatmap']).then(function init() {
             1.0: 'rgba(162, 36, 25, 1)'
         }
     });
-    console.log(heatmap);
-
     myMap.events.add('click', function(e) {
       let coords = e.get('coords');
       addObject(coords)
@@ -81,3 +80,4 @@ ymaps.ready(['Heatmap']).then(function init() {
 
     heatmap.setMap(myMap);
 });
+}
