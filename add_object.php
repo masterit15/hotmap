@@ -21,7 +21,6 @@
   }else{
     $result['success'] = false;
   }
-
   if($_REQUEST['action'] = 'get'){
     $result['result'] = getObjects();
     $result['success'] = true;
