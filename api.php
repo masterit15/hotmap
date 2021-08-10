@@ -15,7 +15,11 @@
     $file = $_SERVER["DOCUMENT_ROOT"] . "/objects.json";
     return json_decode(file_get_contents($file, true));
   }
-
+  function getRaion(){
+    $file = $_SERVER["DOCUMENT_ROOT"] . "/object_ray.json";
+    return json_decode(file_get_contents($file, true));
+  }
+  
   if($_REQUEST['action'] == 'add'){
     $coords = explode(',', $_REQUEST['coords']);
     $result['result'] =  addObjects($coords, $_REQUEST['address']);
@@ -24,7 +28,8 @@
     $result['success'] = false;
   }
   if($_REQUEST['action'] = 'get'){
-    $result['result'] = getObjects();
+    $result['result']['objects'] = getObjects();
+    $result['result']['raion'] = getRaion();
     $result['success'] = true;
   }else{
     $result['success'] = false;
