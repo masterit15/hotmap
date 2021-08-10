@@ -1,13 +1,14 @@
 
 var myPlacemark;
 var myMap;
+var Poligon;
 // добавление объектов
 function addObject(data){
     let formData = new FormData()
     formData.append('action', 'add')
     formData.append('coords', data.coords)
     formData.append('address', data.address)
-    fetch('/add_object.php', {
+    fetch('/api.php', {
       method: 'POST',
       body: formData
     })
@@ -23,7 +24,7 @@ function addObject(data){
 // подгрузка всех объектов
 function getObject(){
   return new Promise((resolve, reject)=>{
-    fetch('/add_object.php?action=get')
+    fetch('/api.php?action=get')
     .then(response=>response.json())
     .then(result=>{
       if(result.success){
@@ -34,16 +35,10 @@ function getObject(){
     })
   })
 }
-
 getObject().then(res=>{
-
-  initMaps(res.result)
+  Poligon = res.result.raion
+  initMaps(res.result.objects)
 })
-
-
-
-
-
 
 function initMaps(obj, param='heat_map'){
 ymaps.ready(['Heatmap']).then(function init() {
@@ -137,6 +132,7 @@ ymaps.ready(['Heatmap']).then(function init() {
       
       //Добавляем маркер (точку) через кластер
       if(param == 'object_map'){
+        console.log(obj.length);
         myClusterer.add(Placemark[i]);
       }
     }
@@ -184,26 +180,25 @@ ymaps.ready(['Heatmap']).then(function init() {
           })
       }
     });
-  function addPoligon(regionName){
-    return new Promise((resolve, reject)=>{
-      let url = `http://nominatim.openstreetmap.org/search?q=${regionName}&format=json&polygon_geojson=1`;
-      fetch(url)
-      .then(response=>response.json())
-      .then(result=>{
-        resolve(result)
+    if(param == 'raion_map'){
+      Poligon.forEach(p=>{
+        let polygon = new ymaps.Polygon(p.coords
+        ,{
+          hintContent: "Многоугольник"
+        },{
+          fillColor: p.color,
+          // Делаем полигон прозрачным для событий карты.
+          interactivityModel: 'default#transparent',
+          strokeWidth: 2,
+          opacity: 0.5
+        });
+        // 3. Добавляем полигон на карту
+        myMap.geoObjects.add(polygon);
+        myMap.setBounds(polygon.geometry.getBounds());
       })
-    })
-  }
-  addPoligon('Владикавказ, 34 микрорайон').then(res=>{
-    if (res.length > 0) {
-      // 2. Создаем полигон с нужными координатами
-      let coordsArr = res[0].geojson.coordinates[0]
-      let p = new ymaps.Polygon(coordsArr);
-      // 3. Добавляем полигон на карту
-      console.log(coordsArr);
-      myMap.geoObjects.add(p);
     }
-  })
+
+
    // Создание метки.
   function createPlacemark(coords) {
       return new ymaps.Placemark(coords, {
@@ -251,10 +246,12 @@ ymaps.ready(['Heatmap']).then(function init() {
 }
 let mapParamBtn = document.querySelectorAll('.actions_btn')
 mapParamBtn.forEach(btn=>{
+  btn.classList.remove('active')
   btn.addEventListener('click', function(e){
+      e.target.classList.toggle('active')
       myMap.destroy()
       getObject().then(res=>{
-        initMaps(res.result, e.target.dataset.map)
+        initMaps(res.result.objects, e.target.dataset.map)
       })
   })
 })

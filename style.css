@@ -24,7 +24,7 @@
   left: 50px;
   margin: auto;
   width: 100%;
-  max-width: 320px;
+  max-width: 350px;
   height: 100%;
   max-height: 500px;
   border-radius: 5px;
@@ -62,4 +62,19 @@
   left: 0;
   top: 10px;
   transition: all 0.3s ease;
+}
+.actions{
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+.actions .actions_btn{
+  background-color: transparent;
+  border: 1px solid #0fb9b1;
+  padding: 8px 20px;
+  cursor: pointer;
+}
+.actions .actions_btn.active{
+  background-color: #0fb9b1;
+  color: #fff;
 }
