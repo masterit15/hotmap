@@ -184,11 +184,28 @@ ymaps.ready(['Heatmap']).then(function init() {
           })
       }
     });
-
-
-
+  function addPoligon(regionName){
+    return new Promise((resolve, reject)=>{
+      let url = `http://nominatim.openstreetmap.org/search?q=${regionName}&format=json&polygon_geojson=1`;
+      fetch(url)
+      .then(response=>response.json())
+      .then(result=>{
+        resolve(result)
+      })
+    })
+  }
+  addPoligon('Владикавказ, 34 микрорайон').then(res=>{
+    if (res.length > 0) {
+      // 2. Создаем полигон с нужными координатами
+      let coordsArr = res[0].geojson.coordinates[0]
+      let p = new ymaps.Polygon(coordsArr);
+      // 3. Добавляем полигон на карту
+      console.log(coordsArr);
+      myMap.geoObjects.add(p);
+    }
+  })
    // Создание метки.
-   function createPlacemark(coords) {
+  function createPlacemark(coords) {
       return new ymaps.Placemark(coords, {
         iconCaption: 'поиск...'
       }, {
