@@ -1,7 +1,7 @@
 <?
   $result = array('success'=> false);
   function addObjects($coords, $address){
-    $file = $_SERVER["DOCUMENT_ROOT"] . "/objects.json";
+    $file = $_SERVER["DOCUMENT_ROOT"] . "/api/objects.json";
     $current = json_decode(file_get_contents($file, true));
     $array = array(
       'address' => $address,
@@ -12,11 +12,11 @@
     file_put_contents($file, json_encode($current));
   }
   function getObjects(){
-    $file = $_SERVER["DOCUMENT_ROOT"] . "/objects.json";
+    $file = $_SERVER["DOCUMENT_ROOT"] . "/api/objects.json";
     return json_decode(file_get_contents($file, true));
   }
   function getRaion(){
-    $file = $_SERVER["DOCUMENT_ROOT"] . "/object_ray.json";
+    $file = $_SERVER["DOCUMENT_ROOT"] . "/api/object_ray.json";
     return json_decode(file_get_contents($file, true));
   }
   
