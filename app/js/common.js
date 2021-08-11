@@ -54,7 +54,7 @@ ymaps.ready(['Heatmap']).then(function init() {
     //Параметры иконки кластера, обычно её делают отличной от точки, чтобы пользователь не путал номер объекта
     // и количество объектов
     var clusterIcons = [{
-      href: '/images/dist/map-claster.png',
+      href: 'app/images/dist/map-claster.png',
       size: [58, 80],
       offset: [-24, -80],
     }];
@@ -123,11 +123,11 @@ ymaps.ready(['Heatmap']).then(function init() {
         balloonMaxWidth: 450,
         balloonMinHeught: 150,
         balloonMaxHeught: 200,
-        iconImageHref: '/images/dist/map-a.png', //Путь к картинке точки
+        iconImageHref: 'app/images/dist/map-a.png', //Путь к картинке точки
         iconImageSize: [50, 70],
         iconImageOffset: [-25, -65],
         iconLayout: 'default#imageWithContent',
-        iconactive: '/images/dist/map-a.png' //Путь к картинке точки при наведении курсора мыши
+        iconactive: 'app/images/dist/map-a.png' //Путь к картинке точки при наведении курсора мыши
       });
       
       //Добавляем маркер (точку) через кластер
@@ -243,14 +243,16 @@ ymaps.ready(['Heatmap']).then(function init() {
 });
 
 }
-let mapParamBtn = document.querySelectorAll('.actions_btn')
-mapParamBtn.forEach(btn=>{
-  btn.classList.remove('active')
-  btn.addEventListener('click', function(e){
-      e.target.classList.toggle('active')
-      myMap.destroy()
-      getObject().then(res=>{
-        initMaps(res.result.objects, e.target.dataset.map)
-      })
+
+  let mapParamBtn = document.querySelectorAll('.actions_btn')
+  mapParamBtn.forEach(btn=>{
+    btn.addEventListener('click', function(e){
+        mapParamBtn.forEach(btn=>btn.classList.remove('active'))
+        e.target.classList.toggle('active')
+        myMap.destroy()
+        let param =  e.target.classList.contains('active') ? e.target.dataset.map : ''
+          getObject().then(res=>{
+            initMaps(res.result.objects, param)
+          })
+    })
   })
-})
