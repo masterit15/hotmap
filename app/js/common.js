@@ -8,7 +8,7 @@ function addObject(data){
     formData.append('action', 'add')
     formData.append('coords', data.coords)
     formData.append('address', data.address)
-    fetch('/api.php', {
+    fetch('../api/api.php', {
       method: 'POST',
       body: formData
     })
@@ -24,7 +24,7 @@ function addObject(data){
 // подгрузка всех объектов
 function getObject(){
   return new Promise((resolve, reject)=>{
-    fetch('/api.php?action=get')
+    fetch('../api/api.php?action=get')
     .then(response=>response.json())
     .then(result=>{
       if(result.success){
@@ -54,7 +54,7 @@ ymaps.ready(['Heatmap']).then(function init() {
     //Параметры иконки кластера, обычно её делают отличной от точки, чтобы пользователь не путал номер объекта
     // и количество объектов
     var clusterIcons = [{
-      href: '/img/map-claster.png',
+      href: '/images/dist/map-claster.png',
       size: [58, 80],
       offset: [-24, -80],
     }];
@@ -123,16 +123,15 @@ ymaps.ready(['Heatmap']).then(function init() {
         balloonMaxWidth: 450,
         balloonMinHeught: 150,
         balloonMaxHeught: 200,
-        iconImageHref: '/img/map-a.png', //Путь к картинке точки
+        iconImageHref: '/images/dist/map-a.png', //Путь к картинке точки
         iconImageSize: [50, 70],
         iconImageOffset: [-25, -65],
         iconLayout: 'default#imageWithContent',
-        iconactive: '/img/map-a.png' //Путь к картинке точки при наведении курсора мыши
+        iconactive: '/images/dist/map-a.png' //Путь к картинке точки при наведении курсора мыши
       });
       
       //Добавляем маркер (точку) через кластер
       if(param == 'object_map'){
-        console.log(obj.length);
         myClusterer.add(Placemark[i]);
       }
     }
@@ -184,7 +183,7 @@ ymaps.ready(['Heatmap']).then(function init() {
       Poligon.forEach(p=>{
         let polygon = new ymaps.Polygon(p.coords
         ,{
-          hintContent: "Многоугольник"
+          hintContent: p.name
         },{
           fillColor: p.color,
           // Делаем полигон прозрачным для событий карты.
