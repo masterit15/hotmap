@@ -1,10 +1,15 @@
 <?
   $result = array('success'=> false);
-  function addObjects($coords, $address){
+  function addObjects($data){
+    $coords = explode(',', $data['coords']);
     $file = $_SERVER["DOCUMENT_ROOT"] . "/api/objects.json";
     $current = json_decode(file_get_contents($file, true));
     $array = array(
-      'address' => $address,
+      'address' => $data['address'],
+      'color' => $data['color'],
+      'catId' => $data['catId'],
+      'cat' => $data['cat'],
+      'icon' => $data['icon'],
       'coords' => [floatval($coords[0]), floatval($coords[1])],
       'id' => count($current) > 0 ? count($current) + 1 : 1,
     );
@@ -21,8 +26,7 @@
   }
   
   if($_REQUEST['action'] == 'add'){
-    $coords = explode(',', $_REQUEST['coords']);
-    $result['result'] =  addObjects($coords, $_REQUEST['address']);
+    $result['result'] =  addObjects($_REQUEST);
     $result['success'] = true;
   }else{
     $result['success'] = false;
@@ -30,6 +34,7 @@
   if($_REQUEST['action'] = 'get'){
     $result['result']['objects'] = getObjects();
     $result['result']['raion'] = getRaion();
+    $result['path'] = $_SERVER["DOCUMENT_ROOT"];
     $result['success'] = true;
   }else{
     $result['success'] = false;

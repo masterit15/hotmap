@@ -13,6 +13,9 @@ const sass         = require('gulp-sass');
 const sassglob     = require('gulp-sass-glob');
 const sourcemaps   = require('gulp-sourcemaps');
 const cleancss     = require('gulp-clean-css');
+const concat       = require('gulp-concat');
+const uglify       = require('gulp-uglify-es').default;
+const terser 			 = require('gulp-terser')
 const autoprefixer = require('gulp-autoprefixer');
 const rename       = require('gulp-rename');
 const imagemin     = require('gulp-imagemin');
@@ -42,7 +45,23 @@ function browsersync() {
     })
   }
 }
-
+function assets() {
+	return src([ // Берём файлы из источников
+		'node_modules/jquery/dist/jquery.min.js',
+		'node_modules/nprogress/nprogress.js',
+		'node_modules/select2/dist/js/select2.min.js',
+		'node_modules/select2/dist/js/i18n/ru.js',
+		'node_modules/air-datepicker/dist/js/datepicker.min.js',
+		'node_modules/chart.js/dist/Chart.min.js',
+		])
+		.pipe(newer(`${baseDir}/assets/js/libs.min.js`))
+		.pipe(concat('libs.min.js')) // Конкатенируем в один файл
+		.pipe(uglify()) // Сжимаем JavaScript
+		// .pipe(babel({presets: ["@babel/preset-env"]}))
+		.pipe(terser())
+		.pipe(dest(`${baseDir}/assets/js/`)) // Выгружаем готовый файл в папку назначения
+		.pipe(browserSync.stream()) // Триггерим Browsersync для обновления страницы
+}
 function scripts() {
 	return src([`${baseDir}/js/*.js`, `!app/js/*.min.js`])
 		.pipe(webpack({
@@ -137,8 +156,9 @@ function startwatch() {
 
 exports.scripts = scripts
 exports.styles  = styles
+exports.assets  = assets
 exports.images  = images
 exports.deploy  = deploy
-exports.assets  = series(scripts, styles, images)
-exports.build   = series(cleandist, scripts, styles, images, buildcopy, buildhtml)
-exports.default = series(scripts, styles, images, parallel(browsersync, startwatch))
+exports.assets  = series(scripts, assets, styles, images)
+exports.build   = series(cleandist, scripts, assets, styles, images, buildcopy, buildhtml)
+exports.default = series(scripts, assets, styles, images, parallel(browsersync, startwatch))
