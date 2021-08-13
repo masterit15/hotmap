@@ -1,61 +1,62 @@
-
 var myPlacemark;
 var myMap;
 var Poligon;
+var mapViewParam;
 // добавление объектов
-function addObject(data){
-    let formData = new FormData()
-    formData.append('action', 'add')
-    formData.append('coords', data.coords)
-    formData.append('address', data.address)
-    fetch('../api/api.php', {
-      method: 'POST',
-      body: formData
-    })
-    .then(response=>response.json())
-    .then(result=>{
-      if(result.success){
+function addObject(data) {
+  $.ajax({
+    url: '../api/api.php',
+    method: 'POST',
+    data: data,
+    success: function (res) {
+      if (res.success) {
         // console.log(result)
-      }else{
-        console.error('error')
       }
-    })
+    },
+    error: function (err) {
+      console.error(err);
+    }
+  })
 }
 // подгрузка всех объектов
-function getObject(){
-  return new Promise((resolve, reject)=>{
-    fetch('../api/api.php?action=get')
-    .then(response=>response.json())
-    .then(result=>{
-      if(result.success){
-        resolve(result)
-      }else{
-        reject('err')
+function getObject() {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: '../api/api.php',
+      method: 'POST',
+      data: { action: 'get' },
+      success: function (res) {
+        if (res.success) {
+          resolve(res)
+        }
+      },
+      error: function (err) {
+        reject(err)
       }
     })
   })
 }
-getObject().then(res=>{
+getObject().then(res => {
   Poligon = res.result.raion
   initMaps(res.result.objects)
 })
 
-function initMaps(obj, param='heat_map'){
-ymaps.ready(['Heatmap']).then(function init() {
+function initMaps(obj, param = 'heat_map') {
+  ymaps.ready(['Heatmap']).then(function init() {
     myMap = new ymaps.Map('map', {
-        center: [43.031645225518204, 44.649434751472754],
-        zoom: 13,
-        controls: []
+      center: [43.031645225518204, 44.649434751472754],
+      zoom: 13,
+      controls: []
     });
-    
+
     var data = [];
     var Placemark = {};
     var ClusterContent = ymaps.templateLayoutFactory.createClass('<div class="claster" ><span>$[properties.geoObjects.length]</span></div>');
     //Параметры иконки кластера, обычно её делают отличной от точки, чтобы пользователь не путал номер объекта
     // и количество объектов
     var clusterIcons = [{
-      href: 'app/images/dist/map-claster.png',
-      size: [58, 80],
+      href: 'app/images/dist/map-classter.svg',
+      size: [70, 100],
       offset: [-24, -80],
     }];
     //Создание самого кластера
@@ -87,7 +88,7 @@ ymaps.ready(['Heatmap']).then(function init() {
       //   build: function () {
       //     myBalloonLayout.superclass.build.call(this);
       //     $('button[data-val]').on('click', function(){
-            
+
       //       let data = {
       //         elid: $(this).data('id'),
       //         action: "vote",
@@ -110,81 +111,81 @@ ymaps.ready(['Heatmap']).then(function init() {
 
     for (var i = 0; i < obj.length; i++) {
       data.push(obj[i].coords)
-      Placemark[i] = new ymaps.Placemark(obj[i].coords, {
-        id: obj[i].id,
-        address: obj[i].address,
-        coords: obj[i].coords,
-        iconContent: "<div class='marker-circ'></div>",
-      }, { //Ниже некоторые параметры точки и балуна
-        balloonContentLayout: myBalloonLayout,
-        balloonOffset: [5, 0],
-        balloonCloseButton: true,
-        balloonMinWidth: 450,
-        balloonMaxWidth: 450,
-        balloonMinHeught: 150,
-        balloonMaxHeught: 200,
-        iconImageHref: 'app/images/dist/map-a.png', //Путь к картинке точки
-        iconImageSize: [50, 70],
-        iconImageOffset: [-25, -65],
-        iconLayout: 'default#imageWithContent',
-        iconactive: 'app/images/dist/map-a.png' //Путь к картинке точки при наведении курсора мыши
-      });
-      
+      // Создаём макет содержимого.
+      MyIconContentLayout = ymaps.templateLayoutFactory.createClass(
+        '<div class="ballon_icon">$[properties.iconContent]</div>'
+      ),
+        Placemark[i] = new ymaps.Placemark(obj[i].coords, {
+          id: obj[i].id,
+          address: obj[i].address,
+          coords: obj[i].coords,
+          iconContent: `<i style="color: ${obj[i].color}" class="fas ${obj[i].icon}"></i>`,
+          hintContent: obj[i].cat ? obj[i].cat : 'Прочее',
+        }, { //Ниже некоторые параметры точки и балуна
+          balloonContentLayout: myBalloonLayout,
+          balloonOffset: [5, 0],
+          balloonCloseButton: true,
+          balloonMinWidth: 450,
+          balloonMaxWidth: 450,
+          balloonMinHeught: 150,
+          balloonMaxHeught: 200,
+          iconImageHref: 'app/images/dist/map-a.svg', //Путь к картинке точки
+          iconImageSize: [70, 90],
+          iconImageOffset: [-25, -65],
+          iconLayout: 'default#imageWithContent',
+          iconactive: 'app/images/dist/map-a-hover.svg', //Путь к картинке точки при наведении курсора мыши
+          iconContentLayout: MyIconContentLayout // Макет содержимого.
+        });
+
       //Добавляем маркер (точку) через кластер
-      if(param == 'object_map'){
+      if (param == 'object_map') {
         myClusterer.add(Placemark[i]);
       }
     }
 
-    
+
     var heatmap = new ymaps.Heatmap(data, {
-        // Радиус влияния.
-        radius: 15,
-        // Нужно ли уменьшать пиксельный размер точек при уменьшении зума. False - не нужно.
-        dissipating: false,
-        // Прозрачность тепловой карты.
-        opacity: 0.9,
-        // Прозрачность у медианной по весу точки.
-        intensityOfMidpoint: 0.5,
-        // JSON описание градиента.
-        gradient: {
-            0.1: 'rgba(46, 204, 113,0.7)',
-            0.3: 'rgba(243, 156, 18,0.8)',
-            0.7: 'rgba(234, 72, 58, 0.9)',
-            1.0: 'rgba(162, 36, 25, 1)'
-        }
+      // Радиус влияния.
+      radius: 15,
+      // Нужно ли уменьшать пиксельный размер точек при уменьшении зума. False - не нужно.
+      dissipating: false,
+      // Прозрачность тепловой карты.
+      opacity: 0.9,
+      // Прозрачность у медианной по весу точки.
+      intensityOfMidpoint: 0.5,
+      // JSON описание градиента.
+      gradient: {
+        0.1: 'rgba(46, 204, 113,0.7)',
+        0.3: 'rgba(243, 156, 18,0.8)',
+        0.7: 'rgba(234, 72, 58, 0.9)',
+        1.0: 'rgba(162, 36, 25, 1)'
+      }
     });
-    myMap.events.add('click', function(e) {
+    myMap.events.add('click', function (e) {
       let coords = e.get('coords');
-      
+
       // Если метка уже создана – просто передвигаем ее.
       if (myPlacemark) {
-          myPlacemark.geometry.setCoordinates(coords);
-          getAddress(coords).then(res=>{
-            let object = {address: res, coords}
-            addObject(object)
-          })
+        myPlacemark.geometry.setCoordinates(coords);
+        getAddress(coords)
       }
       // Если нет – создаем.
       else {
-          myPlacemark = createPlacemark(coords);
-          myMap.geoObjects.add(myPlacemark);
-          // Слушаем событие окончания перетаскивания на метке.
-          myPlacemark.events.add('dragend', function() {
-            getAddress(myPlacemark.geometry.getCoordinates());
-          });
-          getAddress(coords).then(res=>{
-            let object = {address: res, coords}
-            addObject(object)
-          })
+        myPlacemark = createPlacemark(coords);
+        myMap.geoObjects.add(myPlacemark);
+        // Слушаем событие окончания перетаскивания на метке.
+        myPlacemark.events.add('dragend', function () {
+          getAddress(myPlacemark.geometry.getCoordinates());
+        });
+        getAddress(coords)
       }
     });
-    if(param == 'raion_map'){
-      Poligon.forEach(p=>{
+    if (param == 'raion_map') {
+      Poligon.forEach(p => {
         let polygon = new ymaps.Polygon(p.coords
-        ,{
-          hintContent: p.name
-        },{
+          , {
+            hintContent: p.name
+          }, {
           fillColor: p.color,
           // Делаем полигон прозрачным для событий карты.
           interactivityModel: 'default#transparent',
@@ -198,8 +199,8 @@ ymaps.ready(['Heatmap']).then(function init() {
     }
 
 
-   // Создание метки.
-  function createPlacemark(coords) {
+    // Создание метки.
+    function createPlacemark(coords) {
       return new ymaps.Placemark(coords, {
         iconCaption: 'поиск...'
       }, {
@@ -209,50 +210,202 @@ ymaps.ready(['Heatmap']).then(function init() {
     }
     // Определяем адрес по координатам (обратное геокодирование).
     function getAddress(coords) {
-      return new Promise((resolve, reject)=>{
-        myPlacemark.properties.set('iconCaption', 'поиск...');
-        ymaps.geocode(coords)
-        .then(function(res) {
+      myPlacemark.properties.set('iconCaption', 'поиск...');
+      ymaps.geocode(coords)
+        .then(function (res) {
           let firstGeoObject = res.geoObjects.get(0);
           myPlacemark.properties
-          .set({
-            // Формируем строку с данными об объекте.
-            iconCaption: [
-              // Название населенного пункта или вышестоящее административно-территориальное образование.
-              firstGeoObject.getLocalities().length ? firstGeoObject.getLocalities() : firstGeoObject.getAdministrativeAreas(),
-              // Получаем путь до топонима, если метод вернул null, запрашиваем наименование здания.
-              firstGeoObject.getThoroughfare() || firstGeoObject.getPremise()
-            ].filter(Boolean).join(', '),
-            // В качестве контента балуна задаем строку с адресом объекта.
-            balloonContent: firstGeoObject.getAddressLine()
+            .set({
+              // Формируем строку с данными об объекте.
+              iconCaption: [
+                // Название населенного пункта или вышестоящее административно-территориальное образование.
+                firstGeoObject.getLocalities().length ? firstGeoObject.getLocalities() : firstGeoObject.getAdministrativeAreas(),
+                // Получаем путь до топонима, если метод вернул null, запрашиваем наименование здания.
+                firstGeoObject.getThoroughfare() || firstGeoObject.getPremise()
+              ].filter(Boolean).join(', '),
+              // В качестве контента балуна задаем строку с адресом объекта.
+              balloonContent: firstGeoObject.getAddressLine()
+            });
+          let data = {
+            action: "add",
+            address: firstGeoObject.getAddressLine(),
+            coords: coords.toString()
+          };
+          let content = `<div class="form_add">
+                          <div class="group">
+                            <input type="text" name="address" value="${firstGeoObject.getAddressLine()}">
+                            <label>Адрес</label>
+                          </div>
+                          <select name="cat" class="select" id="select_cat">
+                            <option value="#" data-icon="fa-envelope" data-color="#000">Категория</option>
+                            <option value="1" data-icon="fa-faucet" data-color="#3867d6">ЖКХ</option>
+                            <option value="2" data-icon="fa-dumpster" data-color="#079992">Мусор</option>
+                            <option value="3" data-icon="fa-road" data-color="#57606f">Дороги</option>
+                            <option value="4" data-icon="fa-hard-hat" data-color="#fa8231">Незаконное строительство</option>
+                          </select>
+                          <div class="form_action">
+                            <button type="submit" class="add">Добавить</button>
+                            <button class="cancel">Отмена</button>
+                          </div>
+                        </div>`
+
+          $('.actions_content').addClass('active').html(content)
+          // $('.actions_content input[name="address"]').val(firstGeoObject.getAddressLine())
+          $('#select_cat').select2({
+            language: "ru",
+            minimumResultsForSearch: -1
+          })
+          $('#select_cat').on('select2:select', function (e) {
+            data.cat = $(this).find(`option[value="${$(this).val()}"]`).text()
+            data.color = $(this).find(`option[value="${$(this).val()}"]`).data('color')
+            data.icon = $(this).find(`option[value="${$(this).val()}"]`).data('icon')
+            data.catId = Number($(this).val())
           });
-          resolve(firstGeoObject.getAddressLine())
+          $('.actions_content button.add').on('click', function () {
+            addObject(data)
+            $('.actions_content').removeClass('active').html('content')
+            myPlacemark = null
+            myMap.destroy()
+            getObject().then(res => {
+              initMaps(res.result.objects, mapViewParam)
+            })
+          })
+          $('.actions_content button.cancel').on('click', function () {
+            $('.actions_content').removeClass('active')
+            myMap.geoObjects.remove(myPlacemark);
+            myPlacemark = null
+          })
         })
-        .catch(err=>reject(err))
-      })
     }
-    if(param == 'heat_map'){
+    if (param == 'heat_map') {
       heatmap.setMap(myMap);
     }
-    
+
     //Добавление кластеры на карту
     myMap.geoObjects.add(myClusterer);
     //Запрещаем изменение размеров карты по скролу мыши
     // myMap.behaviors.disable("scrollZoom");
 
-});
+  });
 
 }
 
-  let mapParamBtn = document.querySelectorAll('.actions_btn')
-  mapParamBtn.forEach(btn=>{
-    btn.addEventListener('click', function(e){
-        mapParamBtn.forEach(btn=>btn.classList.remove('active'))
-        e.target.classList.toggle('active')
-        myMap.destroy()
-        let param =  e.target.classList.contains('active') ? e.target.dataset.map : ''
-          getObject().then(res=>{
-            initMaps(res.result.objects, param)
-          })
-    })
+$('#select_filter').select2({
+  language: "ru",
+  minimumResultsForSearch: -1
+})
+$('#select_filter').on('change', function () {
+  myMap.destroy()
+  getObject().then(res => {
+    let objects = res.result.objects
+    objects = objects.filter(object => Number(object.catId) == Number($(this).val()))
+    initMaps(objects, mapViewParam)
   })
+})
+$('.actions_btn').on('click', function () {
+  $('.actions_btn').removeClass('active')
+  $(this).addClass('active')
+  myMap.destroy()
+  mapViewParam = $(this).hasClass('active') ? $(this).data('map') : ''
+  getObject().then(res => {
+    initMaps(res.result.objects, mapViewParam)
+  })
+})
+// $('.line-chart').hide()
+$('.chart_btn').on('click', function() {
+  $(this).toggleClass('active')
+  if($(this).hasClass('active')){
+    $('.line-chart').fadeIn(200)
+  }else{
+    $('.line-chart').fadeOut(200)
+  }
+})
+
+const chart = document.getElementById('chart').getContext('2d'),
+  gradient = chart.createLinearGradient(0, 233, 0, 350);
+  gradient.addColorStop(0, 'rgba(36, 180, 171, 0.3)');
+  gradient.addColorStop(0.2, 'rgba(36, 180, 171, 0.2)');
+  gradient.addColorStop(1, 'rgba(36, 180, 171, 0)');
+
+var data = {
+  labels: [
+    'Январь',
+    'Февраль',
+    'Март',
+    'Апрель',
+    'Май',
+    'Июнь',
+    'Июль',
+    'Август',
+    'Сентябрь',
+    'Октябрь',
+    'Ноябрь',
+    'Декабрь',
+  ],
+  datasets: [{
+    label: 'Количество',
+    backgroundColor: gradient,
+    pointBackgroundColor: '#24b4ab',
+    borderWidth: 3,
+    borderColor: '#24b4ab',
+    data: [356, 789, 410, 702, 180, 269, 248, 608, 159, 924, 568, 302, 410, 380, 780]
+  }]
+};
+
+
+var options = {
+  responsive: true,
+  maintainAspectRatio: true,
+  animation: {
+    easing: 'easeInOutQuad',
+    duration: 2000
+  },
+  scales: {
+    xAxes: [{
+      gridLines: {
+        color: '#fff',
+        lineWidth: 1
+      }
+    }],
+    yAxes: [{
+      gridLines: {
+        color: '#b8b8b8',
+        borderDash: [2, 2],
+        lineWidth: 1
+      }
+    }]
+  },
+  elements: {
+    line: {
+      tension: 0.5
+    }
+  },
+  legend: {
+    hidden: true,
+    display: false
+  },
+  point: {
+    backgroundColor: 'white'
+  },
+  tooltips: {
+    titleFontFamily: 'Open Sans',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    titleFontColor: '#24b4ab',
+    caretSize: 10,
+    cornerRadius: 2,
+    xPadding: 10,
+    yPadding: 10
+  },
+  plugins: {
+    legend: {
+      display: false
+    }
+  }
+};
+
+
+var chartInstance = new Chart(chart, {
+  type: 'line',
+  data: data,
+  options: options
+});
