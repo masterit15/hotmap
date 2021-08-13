@@ -11,6 +11,7 @@
       'cat' => $data['cat'],
       'icon' => $data['icon'],
       'coords' => [floatval($coords[0]), floatval($coords[1])],
+      'createDate'=> date('d-m-Y H:m:s'),
       'id' => count($current) > 0 ? count($current) + 1 : 1,
     );
     $current[] = $array;

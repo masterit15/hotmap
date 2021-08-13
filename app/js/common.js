@@ -39,6 +39,7 @@ function getObject() {
 getObject().then(res => {
   Poligon = res.result.raion
   initMaps(res.result.objects)
+  initChart(res.result.objects)
 })
 
 function initMaps(obj, param = 'heat_map') {
@@ -320,92 +321,118 @@ $('.chart_btn').on('click', function() {
     $('.line-chart').fadeOut(200)
   }
 })
-
-const chart = document.getElementById('chart').getContext('2d'),
-  gradient = chart.createLinearGradient(0, 233, 0, 350);
-  gradient.addColorStop(0, 'rgba(36, 180, 171, 0.3)');
-  gradient.addColorStop(0.2, 'rgba(36, 180, 171, 0.2)');
-  gradient.addColorStop(1, 'rgba(36, 180, 171, 0)');
-
-var data = {
-  labels: [
-    'Январь',
-    'Февраль',
-    'Март',
-    'Апрель',
-    'Май',
-    'Июнь',
-    'Июль',
-    'Август',
-    'Сентябрь',
-    'Октябрь',
-    'Ноябрь',
-    'Декабрь',
-  ],
-  datasets: [{
-    label: 'Количество',
-    backgroundColor: gradient,
-    pointBackgroundColor: '#24b4ab',
-    borderWidth: 3,
-    borderColor: '#24b4ab',
-    data: [356, 789, 410, 702, 180, 269, 248, 608, 159, 924, 568, 302, 410, 380, 780]
-  }]
-};
-
-
-var options = {
-  responsive: true,
-  maintainAspectRatio: true,
-  animation: {
-    easing: 'easeInOutQuad',
-    duration: 2000
-  },
-  scales: {
-    xAxes: [{
-      gridLines: {
-        color: '#fff',
-        lineWidth: 1
-      }
-    }],
-    yAxes: [{
-      gridLines: {
-        color: '#b8b8b8',
-        borderDash: [2, 2],
-        lineWidth: 1
-      }
+function mountFormat(date){
+  let mount = Number(date.split('-')[1].split('')[1]) == 1 ? 0 : Number(date.split('-')[1].split('')[1]) - 1
+  return mount
+}
+function initChart(chartData){
+  let  labels = [
+    {mount: 'Январь', count: 0},
+    {mount: 'Февраль', count: 0},
+    {mount: 'Март', count: 0},
+    {mount: 'Апрель', count: 0},
+    {mount: 'Май', count: 0},
+    {mount: 'Июнь', count: 0},
+    {mount: 'Июль', count: 0},
+    {mount: 'Август', count: 0},
+    {mount: 'Сентябрь', count: 0},
+    {mount: 'Октябрь', count: 0},
+    {mount: 'Ноябрь', count: 0},
+    {mount: 'Декабрь', count: 0},
+  ]
+  chartData.forEach(el => {
+    labels[mountFormat(el.createDate)].count += 1
+  });
+  let dataCount = []
+  labels.forEach(l=>{
+    dataCount.push(l.count)
+  })
+  const chart = document.getElementById('chart').getContext('2d'),
+    gradient = chart.createLinearGradient(0, 233, 0, 350);
+    gradient.addColorStop(0, 'rgba(36, 180, 171, 0.3)');
+    gradient.addColorStop(0.2, 'rgba(36, 180, 171, 0.2)');
+    gradient.addColorStop(1, 'rgba(36, 180, 171, 0)');
+  var data = {
+    labels: [
+      'Январь',
+      'Февраль',
+      'Март',
+      'Апрель',
+      'Май',
+      'Июнь',
+      'Июль',
+      'Август',
+      'Сентябрь',
+      'Октябрь',
+      'Ноябрь',
+      'Декабрь',
+    ],
+    datasets: [{
+      label: 'Количество',
+      backgroundColor: gradient,
+      pointBackgroundColor: '#24b4ab',
+      borderWidth: 3,
+      borderColor: '#24b4ab',
+      data: dataCount
     }]
-  },
-  elements: {
-    line: {
-      tension: 0.5
-    }
-  },
-  legend: {
-    hidden: true,
-    display: false
-  },
-  point: {
-    backgroundColor: 'white'
-  },
-  tooltips: {
-    titleFontFamily: 'Open Sans',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    titleFontColor: '#24b4ab',
-    caretSize: 10,
-    cornerRadius: 2,
-    xPadding: 10,
-    yPadding: 10
-  },
-  plugins: {
+  };
+
+
+  var options = {
+    responsive: true,
+    maintainAspectRatio: true,
+    animation: {
+      easing: 'easeInOutQuad',
+      duration: 2000
+    },
+    scales: {
+      xAxes: [{
+        gridLines: {
+          color: 'rgba(0,0,0,0.1)',
+          borderDash: [2, 2],
+          lineWidth: 1
+        }
+      }],
+      yAxes: [{
+        gridLines: {
+          color: 'rgba(0,0,0,0.1)',
+          borderDash: [2, 2],
+          lineWidth: 1
+        }
+      }]
+    },
+    elements: {
+      line: {
+        tension: 0.5
+      }
+    },
     legend: {
+      hidden: true,
       display: false
+    },
+    point: {
+      backgroundColor: 'white'
+    },
+    tooltips: {
+      titleFontFamily: 'Open Sans',
+      backgroundColor: 'rgba(0,0,0,0.3)',
+      titleFontColor: '#fff',
+      caretSize: 15,
+      cornerRadius: 3,
+      xPadding: 15,
+      yPadding: 15
+    },
+    plugins: {
+      legend: {
+        display: false
+      }
     }
-  }
-};
+  };
 
 
-var chartInstance = new Chart(chart, {
-  type: 'line',
-  data: data,
-  options: options
-});
+  var chartInstance = new Chart(chart, {
+    type: 'line',
+    data: data,
+    options: options
+  });
+}
