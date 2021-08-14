@@ -1,7 +1,9 @@
 <?require($_SERVER["DOCUMENT_ROOT"]."/app/header.php");?>
-<div id="map"></div>
-  <div class="actions_param">
+  <div id="map"></div>
+  <div class="actions_param left">
     <button class="chart_btn"><i class="fas fa-chart-area"></i></button>
+  </div>
+  <div class="actions_param right">
     <button class="actions_btn active" data-map="heat_map">Тепловая карта</button>
     <button class="actions_btn" data-map="object_map">Карта объектов</button>
     <button class="actions_btn" data-map="raion_map">Карта районов</button>
@@ -13,10 +15,11 @@
       <option value="4">Незаконное строительство</option>
     </select>
   </div>
-  <div class="line-chart">
-    <div class="aspect-ratio">
-      <canvas id="chart"></canvas>
-    </div>
+  <div class="chart chart-line">
+      <canvas id="line-chart"></canvas>
+  </div>
+  <div class="chart chart-pie">
+      <canvas id="pie-chart"></canvas>
   </div>
   <div class="actions_content"></div>
 <?require($_SERVER["DOCUMENT_ROOT"]."/app/footer.php");?>
