@@ -39,6 +39,7 @@
         "@fortawesome/fontawesome-free": "^5.15.4",
         "air-datepicker": "^2.2.3",
         "chart.js": "^2.5.0",
+        "gsap": "^3.7.1",
         "jquery": "^3.6.0",
         "nprogress": "^0.2.0",
         "select2": "^4.1.0-rc.0"

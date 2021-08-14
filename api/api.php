@@ -15,6 +15,7 @@
       'id' => count($current) > 0 ? count($current) + 1 : 1,
     );
     $current[] = $array;
+    
     file_put_contents($file, json_encode($current));
   }
   function getObjects(){
@@ -27,7 +28,8 @@
   }
   
   if($_REQUEST['action'] == 'add'){
-    $result['result'] =  addObjects($_REQUEST);
+    $result['post'] = $_POST;
+    $result['result'] =  addObjects($_POST);
     $result['success'] = true;
   }else{
     $result['success'] = false;
@@ -35,7 +37,6 @@
   if($_REQUEST['action'] = 'get'){
     $result['result']['objects'] = getObjects();
     $result['result']['raion'] = getRaion();
-    $result['path'] = $_SERVER["DOCUMENT_ROOT"];
     $result['success'] = true;
   }else{
     $result['success'] = false;

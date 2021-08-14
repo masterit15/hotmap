@@ -83,7 +83,9 @@ function scripts() {
 		})).on('error', function handleError() {
 			this.emit('end')
 		})
+		.pipe(sourcemaps.init())
 		.pipe(rename('index.min.js'))
+		.pipe(sourcemaps.write())
 		.pipe(dest(`${baseDir}/js`))
 		.pipe(browserSync.stream())
 }

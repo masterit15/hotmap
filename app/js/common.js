@@ -2,6 +2,10 @@ var myPlacemark;
 var myMap;
 var Poligon;
 var mapViewParam;
+var myPieChart
+var chartInstance
+const { gsap } = require("gsap/all")
+const tl = gsap.timeline()
 // добавление объектов
 function addObject(data) {
   $.ajax({
@@ -39,7 +43,7 @@ function getObject() {
 getObject().then(res => {
   Poligon = res.result.raion
   initMaps(res.result.objects)
-  initChart(res.result.objects)
+  if(res.result.objects) initChart(res.result.objects)
 })
 
 function initMaps(obj, param = 'heat_map') {
@@ -109,7 +113,7 @@ function initMaps(obj, param = 'heat_map') {
       //   },
       // }
     );
-
+    if(obj){
     for (var i = 0; i < obj.length; i++) {
       data.push(obj[i].coords)
       // Создаём макет содержимого.
@@ -143,8 +147,6 @@ function initMaps(obj, param = 'heat_map') {
         myClusterer.add(Placemark[i]);
       }
     }
-
-
     var heatmap = new ymaps.Heatmap(data, {
       // Радиус влияния.
       radius: 15,
@@ -162,6 +164,7 @@ function initMaps(obj, param = 'heat_map') {
         1.0: 'rgba(162, 36, 25, 1)'
       }
     });
+  }
     myMap.events.add('click', function (e) {
       let coords = e.get('coords');
 
@@ -181,6 +184,7 @@ function initMaps(obj, param = 'heat_map') {
         getAddress(coords)
       }
     });
+    
     if (param == 'raion_map') {
       Poligon.forEach(p => {
         let polygon = new ymaps.Polygon(p.coords
@@ -269,6 +273,7 @@ function initMaps(obj, param = 'heat_map') {
             myMap.destroy()
             getObject().then(res => {
               initMaps(res.result.objects, mapViewParam)
+              if(res.result.objects) initChart(res.result.objects)
             })
           })
           $('.actions_content button.cancel').on('click', function () {
@@ -301,6 +306,7 @@ $('#select_filter').on('change', function () {
     let objects = res.result.objects
     objects = objects.filter(object => Number(object.catId) == Number($(this).val()))
     initMaps(objects, mapViewParam)
+    initChart(objects)
   })
 })
 $('.actions_btn').on('click', function () {
@@ -310,16 +316,8 @@ $('.actions_btn').on('click', function () {
   mapViewParam = $(this).hasClass('active') ? $(this).data('map') : ''
   getObject().then(res => {
     initMaps(res.result.objects, mapViewParam)
+    initChart(res.result.objects)
   })
-})
-// $('.line-chart').hide()
-$('.chart_btn').on('click', function() {
-  $(this).toggleClass('active')
-  if($(this).hasClass('active')){
-    $('.line-chart').fadeIn(200)
-  }else{
-    $('.line-chart').fadeOut(200)
-  }
 })
 function mountFormat(date){
   let mount = Number(date.split('-')[1].split('')[1]) == 1 ? 0 : Number(date.split('-')[1].split('')[1]) - 1
@@ -347,7 +345,8 @@ function initChart(chartData){
   labels.forEach(l=>{
     dataCount.push(l.count)
   })
-  const chart = document.getElementById('chart').getContext('2d'),
+  const chart = document.getElementById('line-chart').getContext('2d'),
+        pie = document.getElementById('pie-chart').getContext('2d'),
     gradient = chart.createLinearGradient(0, 233, 0, 350);
     gradient.addColorStop(0, 'rgba(36, 180, 171, 0.3)');
     gradient.addColorStop(0.2, 'rgba(36, 180, 171, 0.2)');
@@ -373,7 +372,8 @@ function initChart(chartData){
       pointBackgroundColor: '#24b4ab',
       borderWidth: 3,
       borderColor: '#24b4ab',
-      data: dataCount
+      data: dataCount,
+      min: 0
     }]
   };
 
@@ -394,6 +394,9 @@ function initChart(chartData){
         }
       }],
       yAxes: [{
+        ticks: {
+          stepSize: 1
+        },
         gridLines: {
           color: 'rgba(0,0,0,0.1)',
           borderDash: [2, 2],
@@ -404,6 +407,9 @@ function initChart(chartData){
     elements: {
       line: {
         tension: 0.5
+      },
+      arc: {
+        backgroundColor: '#333'
       }
     },
     legend: {
@@ -411,28 +417,94 @@ function initChart(chartData){
       display: false
     },
     point: {
-      backgroundColor: 'white'
+      // backgroundColor: 'white'
     },
     tooltips: {
       titleFontFamily: 'Open Sans',
-      backgroundColor: 'rgba(0,0,0,0.3)',
-      titleFontColor: '#fff',
+      backgroundColor: 'rgba(255,255,255,0.5)',
+      titleFontColor: '#333',
+      bodyFontColor: '#333',
       caretSize: 15,
       cornerRadius: 3,
       xPadding: 15,
-      yPadding: 15
-    },
-    plugins: {
-      legend: {
-        display: false
+      yPadding: 15,
+      // intersect: false,
+      
+      custom: function(tooltipModel) {
+        
       }
-    }
+    },
+    // plugins: {
+    //   legend: {
+    //     display: false
+    //   }
+    // }
   };
-
-
-  var chartInstance = new Chart(chart, {
+  chartInstance = new Chart(chart, {
     type: 'line',
     data: data,
     options: options
   });
+
+  let dataPie = {
+    datasets: [{
+        data: dataCount,
+        backgroundColor: [
+          '#0984e3',
+          '#74b9ff',
+          '#a29bfe',
+          '#55efc4',
+          '#00cec9',
+          '#00b894',
+          '#ffeaa7',
+          '#eec768',
+          '#fdcb6e',
+          '#fab1a0',
+          '#ff7675',
+          '#d63031',
+      ]
+    }],
+
+    // These labels appear in the legend and in the tooltips when hovering different arcs
+    labels: [
+      'Январь',
+      'Февраль',
+      'Март',
+      'Апрель',
+      'Май',
+      'Июнь',
+      'Июль',
+      'Август',
+      'Сентябрь',
+      'Октябрь',
+      'Ноябрь',
+      'Декабрь',
+    ],
+  }
+  let optionsPie = {
+    responsive: true,
+    maintainAspectRatio: false,
+    legend: {
+      display: true,
+      position: 'left',
+      labels: {
+        
+      }
+    }
+  }
+  myPieChart = new Chart(pie,{
+    type: 'pie',
+    data: dataPie,
+    options: optionsPie
+});
 }
+
+
+$('.chart_btn').on('click', function() {
+  $(this).toggleClass('active')
+  if($(this).hasClass('active')){
+    tl.to('.chart', { scale: 1, opacity: 1, duration: .5, stagger: 0.1, ease: "elastic" })
+  }else{
+    tl.to('.chart', { scale: 0, opacity: 0, duration: .5, stagger: 0.1, ease: "elastic" })
+  }
+})
