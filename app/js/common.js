@@ -134,7 +134,7 @@ function initMaps(obj, param = 'heat_map') {
           balloonMaxWidth: 450,
           balloonMinHeught: 150,
           balloonMaxHeught: 200,
-          iconImageHref: 'app/images/dist/map-a.svg', //Путь к картинке точки
+          iconImageHref: 'app/images/dist/map-a-red.svg', //Путь к картинке точки
           iconImageSize: [70, 90],
           iconImageOffset: [-25, -65],
           iconLayout: 'default#imageWithContent',
@@ -428,17 +428,10 @@ function initChart(chartData){
       cornerRadius: 3,
       xPadding: 15,
       yPadding: 15,
-      // intersect: false,
-      
       custom: function(tooltipModel) {
         
       }
-    },
-    // plugins: {
-    //   legend: {
-    //     display: false
-    //   }
-    // }
+    }
   };
   chartInstance = new Chart(chart, {
     type: 'line',
@@ -446,39 +439,42 @@ function initChart(chartData){
     options: options
   });
 
+  let  labelsPie = [
+    {catId: 1, cat: "ЖКХ", count: 0},
+    {catId: 2, cat: "Мусор", count: 0},
+    {catId: 3, cat: "Дороги", count: 0},
+    {catId: 4, cat: "Незаконное строительство", count: 0},
+
+  ]
+  chartData.forEach(el => {
+    labelsPie.forEach((l, i, a)=>{
+      if(el.catId == l.catId){
+        labelsPie[i].count += 1
+      }
+    })
+    
+  });
+  let dataCountPie = []
+  labelsPie.forEach(l=>{
+    dataCountPie.push(l.count)
+  })
   let dataPie = {
     datasets: [{
-        data: dataCount,
+        data: dataCountPie,
         backgroundColor: [
           '#0984e3',
-          '#74b9ff',
-          '#a29bfe',
-          '#55efc4',
-          '#00cec9',
-          '#00b894',
-          '#ffeaa7',
-          '#eec768',
-          '#fdcb6e',
-          '#fab1a0',
-          '#ff7675',
-          '#d63031',
+          '#079992',
+          '#57606f',
+          '#fa8231',
       ]
     }],
 
     // These labels appear in the legend and in the tooltips when hovering different arcs
     labels: [
-      'Январь',
-      'Февраль',
-      'Март',
-      'Апрель',
-      'Май',
-      'Июнь',
-      'Июль',
-      'Август',
-      'Сентябрь',
-      'Октябрь',
-      'Ноябрь',
-      'Декабрь',
+      'ЖКХ',
+      'Мусор',
+      'Дороги',
+      'Незаконное строительство'
     ],
   }
   let optionsPie = {
