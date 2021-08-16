@@ -248,6 +248,14 @@ function initMaps(obj, param = 'heat_map') {
                             <option value="3" data-icon="fa-road" data-color="#57606f">Дороги</option>
                             <option value="4" data-icon="fa-hard-hat" data-color="#fa8231">Незаконное строительство</option>
                           </select>
+                          <div class="group">
+                            <input type="text" name="title">
+                            <label>Тема</label>
+                          </div>
+                          <div class="group">
+                            <input type="text" name="description">
+                            <label>Текст</label>
+                          </div>
                           <div class="form_action">
                             <button type="submit" class="add">Добавить</button>
                             <button class="cancel">Отмена</button>
