@@ -6,6 +6,46 @@ var myPieChart
 var chartInstance
 const { gsap } = require("gsap/all")
 const tl = gsap.timeline()
+
+
+let addData = {
+  address: '',
+  color: '',
+  catId: 0,
+  title: '',
+  description: '',
+  statusId: 15,
+  cat: '',
+  icon: '',
+}
+
+let objectfilter = {
+
+}
+
+let filterProxied = new Proxy(objectfilter, {
+  get: function(target, prop) {
+      // console.log({
+      // 	type: "get",
+      // 	target,
+      // 	prop
+      // });
+      return Reflect.get(target, prop);
+  },
+  set: function(target, prop, value) {
+      // console.log({
+      // 	type: "set",
+      // 	target,
+      // 	prop,
+      // 	value
+      // });
+      setTimeout(()=>{
+          filterPets(target)
+      },10)
+      
+      return Reflect.set(target, prop, value);
+  }
+});
 // добавление объектов
 function addObject(data) {
   $.ajax({
@@ -79,11 +119,6 @@ function initMaps(obj, param = 'heat_map') {
           <p class="ballon_content_title"><strong>$[properties.name]</strong></p>
           <ul class="ballon_content_info" >
             <li><strong>Адрес:</strong> $[properties.address]</li>
-            <li><strong>Дата Акта проверки з/у:</strong> $[properties.dateVerification]</li>
-            <li><strong>Выявленое нарушения:</strong> $[properties.violations]</li>
-            <li><strong>Функциональное назначение:</strong> $[properties.function] </li>
-            <li><strong>Этажность (кол-во этажей):</strong> $[properties.floors]</li>
-            <li><strong>Площадь застройки (кв.м):</strong> $[properties.square]</li>
             <li><strong><a href="$[properties.url]">Подробнее</a></strong></li>
           </ul>
         </div>
@@ -116,6 +151,17 @@ function initMaps(obj, param = 'heat_map') {
     if(obj){
     for (var i = 0; i < obj.length; i++) {
       data.push(obj[i].coords)
+      switch (Number(obj[i].statusId)) {
+        case 16:
+          $mapIcon = 'map-yellow';
+          break;
+        case 17:
+          $mapIcon = 'map-green';
+          break;
+        default:
+          $mapIcon = 'map-red';
+          break;
+      }
       // Создаём макет содержимого.
       MyIconContentLayout = ymaps.templateLayoutFactory.createClass(
         '<div class="ballon_icon">$[properties.iconContent]</div>'
@@ -134,7 +180,7 @@ function initMaps(obj, param = 'heat_map') {
           balloonMaxWidth: 450,
           balloonMinHeught: 150,
           balloonMaxHeught: 200,
-          iconImageHref: 'app/images/dist/map-a-red.svg', //Путь к картинке точки
+          iconImageHref: `app/images/dist/${$mapIcon}.svg`, //Путь к картинке точки
           iconImageSize: [70, 90],
           iconImageOffset: [-25, -65],
           iconLayout: 'default#imageWithContent',
@@ -231,11 +277,7 @@ function initMaps(obj, param = 'heat_map') {
               // В качестве контента балуна задаем строку с адресом объекта.
               balloonContent: firstGeoObject.getAddressLine()
             });
-          let data = {
-            action: "add",
-            address: firstGeoObject.getAddressLine(),
-            coords: coords.toString()
-          };
+            
           let content = `<div class="form_add">
                           <div class="group">
                             <input type="text" name="address" value="${firstGeoObject.getAddressLine()}">
@@ -261,7 +303,18 @@ function initMaps(obj, param = 'heat_map') {
                             <button class="cancel">Отмена</button>
                           </div>
                         </div>`
-
+          addData = {
+            action: "add",
+            address: firstGeoObject.getAddressLine(),
+            coords: coords.toString(),
+            statusId: 15
+          };
+          $('input[name="title"]').on('change', function() {
+            addData.title = $(this).val()
+          })
+          $('input[name="description"]').on('change', function() {
+            addData.title = $(this).val()
+          })
           $('.actions_content').addClass('active').html(content)
           // $('.actions_content input[name="address"]').val(firstGeoObject.getAddressLine())
           $('#select_cat').select2({
@@ -269,13 +322,13 @@ function initMaps(obj, param = 'heat_map') {
             minimumResultsForSearch: -1
           })
           $('#select_cat').on('select2:select', function (e) {
-            data.cat = $(this).find(`option[value="${$(this).val()}"]`).text()
-            data.color = $(this).find(`option[value="${$(this).val()}"]`).data('color')
-            data.icon = $(this).find(`option[value="${$(this).val()}"]`).data('icon')
-            data.catId = Number($(this).val())
+            addData.cat = $(this).find(`option[value="${$(this).val()}"]`).text()
+            addData.color = $(this).find(`option[value="${$(this).val()}"]`).data('color')
+            addData.icon = $(this).find(`option[value="${$(this).val()}"]`).data('icon')
+            addData.catId = Number($(this).val())
           });
           $('.actions_content button.add').on('click', function () {
-            addObject(data)
+            addObject(addData)
             $('.actions_content').removeClass('active').html('content')
             myPlacemark = null
             myMap.destroy()

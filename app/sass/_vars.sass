@@ -1,1 +1,13 @@
+@mixin font($fname, $fstyle, $fweight, $furl)
+	@font-face
+		font-family: $fname
+		font-style: $fstyle
+		font-weight: $fweight
+		src: url($furl) format('ttf')
+
+@include font('Roboto-Black', bold, 900, '../fonts/Roboto/Roboto-Black.ttf')
+@include font('Roboto-Regular', normal, 400, '../fonts/Roboto/Roboto-Regular.ttf')
+  
+$RobotoBlack: 'Roboto-Black' 
+$RobotoRegular: 'Roboto-Regular' 
 $shadow: 0 10px 20px rgba(#000,0.2)

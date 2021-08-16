@@ -4,14 +4,25 @@
     $coords = explode(',', $data['coords']);
     $file = $_SERVER["DOCUMENT_ROOT"] . "/api/objects.json";
     $current = json_decode(file_get_contents($file, true));
+    switch (intval($data['statusId'])) {
+      case 16:
+        $status = 'В работе';
+        break;
+      case 17:
+        $status = 'Закрыта';
+        break;
+      default:
+      $status = 'Не обработан';
+        break;
+    }
     $array = array(
       'address' => $data['address'],
       'color' => $data['color'],
       'catId' => $data['catId'],
-      'status' => 'Не обработан',
+      'status' => $status,
       'title' => $data['title'],
       'description' => $data['description'],
-      'statusId' => 15,
+      'statusId' => intval($data['statusId']),
       'cat' => $data['cat'],
       'icon' => $data['icon'],
       'coords' => [floatval($coords[0]), floatval($coords[1])],
