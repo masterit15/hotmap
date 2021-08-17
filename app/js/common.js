@@ -565,3 +565,5 @@ $('.chart_btn').on('click', function() {
     tl.to('.chart', { scale: 0, opacity: 0, duration: .5, stagger: 0.1, ease: "elastic" })
   }
 })
+
+
