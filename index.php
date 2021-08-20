@@ -2,6 +2,7 @@
   <div id="map"></div>
   <div class="actions_param left">
     <button class="chart_btn"><i class="fas fa-chart-area"></i></button>
+    <button class="message_btn"><i class="fas fa-envelope-open-text"></i></button>
   </div>
   <div class="actions_param right">
     <button class="actions_btn active" data-map="heat_map">Тепловая карта</button>

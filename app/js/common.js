@@ -565,3 +565,17 @@ $('.chart_btn').on('click', function() {
     tl.to('.chart', { scale: 0, opacity: 0, duration: .5, stagger: 0.1, ease: "elastic" })
   }
 })
+let coun = 1
+$('.message_btn').on('click', function() {
+  $.ajax({
+    url: '../api/tg_handler.php',
+    method: 'POST',
+    data: { message: `сообщение № ${coun++}` },
+    success: function (res) {
+      console.log(res);
+    },
+    error: function (err) {
+      console.error(err)
+    }
+  })
+})
